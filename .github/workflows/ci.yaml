@@ -1,0 +1,121 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Lint, unit tests and repository checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          extensions: zip, gd, mysqli, dom, simplexml, openssl
+          tools: composer
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - run: python3 scripts/generate-secrets.py && cp .env.example .env
+      - name: Static analysis (PHPStan with WordPress stubs)
+        run: composer install --no-interaction --no-progress && composer analyse
+      - name: PHP coding standard (PHP-CS-Fixer, checksum-pinned)
+        run: sh scripts/lint.sh
+      - name: Static tests (PHP unit, Python, crypto, syntax, secret scan)
+        run: make test
+      - name: Repository hygiene and supply-chain pinning
+        run: python3 scripts/release-check.py
+      - name: Compose files render
+        run: |
+          docker compose config --quiet
+          docker compose -f compose.yaml -f compose.dev.yaml config --quiet
+          TLS_DIRECTORY=/tmp docker compose -f compose.yaml -f compose.production.yaml config --quiet
+      - name: Shell scripts
+        run: shellcheck --severity=warning scripts/*.sh tests/*.sh
+
+  stack:
+    name: Full stack (integration, browser, backup/restore, production smoke)
+    needs: static
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: make init
+      - name: Build and start the development stack
+        run: docker compose build && docker compose up -d && make bootstrap
+      - name: Integration tests (live WordPress + MariaDB)
+        run: make integration
+      - name: Demo data
+        run: make seed
+      - name: Worker pass and health
+        run: |
+          docker compose exec -T worker php /opt/nbe/scripts/worker.php
+          docker compose exec -T worker php /opt/nbe/scripts/health.php --worker
+      - name: Browser tests (desktop and mobile)
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run test:e2e
+      - name: Encrypted backup and isolated restore drill
+        run: |
+          docker compose --profile backup build backup
+          docker compose --profile backup run --rm backup restic init
+          make backup
+          make backup-check
+          make restore-drill
+      - name: Capture runtime versions
+        run: bash scripts/runtime-evidence.sh
+      - name: Production overlay and hardening smoke test
+        run: docker compose down -v && make production-smoke
+      - if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: evidence
+          path: |
+            test-results/
+            docs/evidence/
+          if-no-files-found: ignore
+      - if: always()
+        run: docker compose down -v --remove-orphans
+
+  image-scan:
+    name: SBOM and vulnerability scan
+    needs: static
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: docker build -t noblogs4ever:local .
+      - uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          image: noblogs4ever:local
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+      - name: Fail on fixable HIGH/CRITICAL vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: noblogs4ever:local
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      - if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: sbom.cdx.json
+          if-no-files-found: ignore

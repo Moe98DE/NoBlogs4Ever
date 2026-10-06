@@ -1,0 +1,170 @@
+# NoBlogs4Ever development stack. Production adds compose.production.yaml on top.
+#
+#   edge    Caddy: the only published port; routes the base domain and *.domain
+#   app     Apache/PHP WordPress Multisite (image built from ./Dockerfile)
+#   worker  same image; runs scheduled posts, imports, exports, retention
+#   db      MariaDB, on an internal-only network
+#   mail    Mailpit: catches every email in development (http://localhost:8025)
+#   backup  Restic (profile "backup"); cli/importer: one-off tools (profile "tools")
+name: noblogs4ever
+x-app: &app
+  image: ${NBE_APP_IMAGE:-noblogs4ever:local}
+  env_file: ${NBE_ENV_FILE:-.env}
+  environment: &env
+    DB_HOST: db
+    DB_NAME: wordpress
+    DB_USER: wordpress
+    NBE_JOB_DIR: /var/lib/nbe/jobs
+    NBE_RATE_DIR: /run/nbe-rate
+  secrets: [db_password, wp_salt, smtp_password]
+  volumes:
+    - uploads:/var/www/html/wp-content/uploads
+    - jobs:/var/lib/nbe/jobs
+    - logs:/var/lib/nbe/logs
+    - rate:/run/nbe-rate
+    - backup-status:/var/lib/nbe/backup-status:ro
+  tmpfs: [/tmp, /var/run/apache2, /var/lock/apache2, /run/nbe-secrets]
+  logging:
+    driver: local
+    options: {max-size: 10m, max-file: '3'}
+  depends_on:
+    db: {condition: service_healthy}
+  networks: [ingress, data]
+  security_opt: [no-new-privileges:true]
+  pids_limit: ${APP_PIDS_LIMIT:-256}
+  mem_limit: ${APP_MEMORY_LIMIT:-768m}
+  cpus: ${APP_CPU_LIMIT:-1.5}
+services:
+  edge:
+    image: caddy:2.10@sha256:c3d7ee5d2b11f9dc54f947f68a734c84e9c9666c92c88a7f30b9cba5da182adb
+    env_file: ${NBE_ENV_FILE:-.env}
+    ports: ['127.0.0.1:${PLATFORM_PORT:-8080}:80']
+    volumes: ['./config/Caddyfile:/etc/caddy/Caddyfile:ro', 'caddy:/data']
+    networks: [ingress]
+    security_opt: [no-new-privileges:true]
+    pids_limit: ${EDGE_PIDS_LIMIT:-128}
+    mem_limit: ${EDGE_MEMORY_LIMIT:-256m}
+    cpus: ${EDGE_CPU_LIMIT:-0.5}
+    depends_on: [app]
+    restart: unless-stopped
+  app:
+    <<: *app
+    build: .
+    restart: unless-stopped
+  worker:
+    <<: *app
+    command: ['nbe-worker']
+    networks: [ingress, data]
+    healthcheck:
+      test: ['CMD', 'php', '/opt/nbe/scripts/health.php', '--worker']
+      interval: 60s
+    restart: unless-stopped
+  cli:
+    <<: *app
+    profiles: [tools]
+    command: ['wp', '--info']
+    environment:
+      <<: *env
+      NBE_ADMIN_EMAIL: ${NBE_ADMIN_EMAIL:-operator@example.invalid}
+      NBE_RUN_AS: www-data
+      NBE_ADMIN_PASSWORD_FILE: /run/nbe-secrets/admin_password
+      NBE_DEMO_PASSWORD_FILE: /run/nbe-secrets/demo_password
+      # Passed through from the operator's shell for `make migration-validate`.
+      NBE_VALIDATION_SITE_ID: ${NBE_VALIDATION_SITE_ID:-}
+      NBE_VALIDATION_SOURCE_HOST: ${NBE_VALIDATION_SOURCE_HOST:-}
+      NBE_VALIDATION_ALLOWED_EMBEDS: ${NBE_VALIDATION_ALLOWED_EMBEDS:-}
+      NBE_VALIDATION_MAX_PAGES: ${NBE_VALIDATION_MAX_PAGES:-}
+    secrets: [db_password, wp_salt, smtp_password, admin_password, demo_password]
+  importer:
+    <<: *app
+    profiles: [tools]
+    command: ['wp', '--info']
+    environment:
+      <<: *env
+      # Passed through from the operator's shell for `make large-import`.
+      NBE_OPERATOR_IMPORT_ACK: ${NBE_OPERATOR_IMPORT_ACK:-}
+      NBE_IMPORT_ARCHIVE: ${NBE_IMPORT_ARCHIVE:-}
+      NBE_IMPORT_SITE_ID: ${NBE_IMPORT_SITE_ID:-}
+      NBE_IMPORT_USER_ID: ${NBE_IMPORT_USER_ID:-}
+      NBE_IMPORT_AUTHOR_MAP: ${NBE_IMPORT_AUTHOR_MAP:-}
+      NBE_IMPORT_MAX_INPUT_BYTES: ${NBE_IMPORT_MAX_INPUT_BYTES:-}
+      NBE_IMPORT_MAX_EXTRACTED_BYTES: ${NBE_IMPORT_MAX_EXTRACTED_BYTES:-}
+      NBE_IMPORT_MAX_FILES: ${NBE_IMPORT_MAX_FILES:-}
+      NBE_IMPORT_MAX_FILE_BYTES: ${NBE_IMPORT_MAX_FILE_BYTES:-}
+      NBE_IMPORT_MAX_XML_BYTES: ${NBE_IMPORT_MAX_XML_BYTES:-}
+      NBE_IMPORT_MAX_ITEMS: ${NBE_IMPORT_MAX_ITEMS:-}
+    volumes:
+      - uploads:/var/www/html/wp-content/uploads
+      - jobs:/var/lib/nbe/jobs
+      - logs:/var/lib/nbe/logs
+      - rate:/run/nbe-rate
+      - backup-status:/var/lib/nbe/backup-status:ro
+      - ${IMPORT_DIRECTORY:-./.runtime/imports}:/imports:ro
+    secrets: [db_password, wp_salt, smtp_password]
+  db:
+    image: mariadb:11.8@sha256:2439dcd7d14010ecd1ff7a4e1c5abe8e208c34fe35290744deeeaac3569043c3
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD_FILE: /run/secrets/db_password
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    secrets: [db_password, db_root_password]
+    volumes: [database:/var/lib/mysql]
+    command: ['--skip-log-bin', '--slow-query-log=0', '--general-log=0']
+    healthcheck:
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      interval: 10s
+      retries: 10
+    networks: [data]
+    pids_limit: ${DB_PIDS_LIMIT:-512}
+    mem_limit: ${DB_MEMORY_LIMIT:-1g}
+    cpus: ${DB_CPU_LIMIT:-2.0}
+    restart: unless-stopped
+  mail:
+    image: axllent/mailpit:v1.27@sha256:e22dce5b36f93c77082e204a3942fb6b283b7896e057458400a4c88344c3df68
+    ports: ['127.0.0.1:8025:8025']
+    environment: {MP_MAX_MESSAGES: '100', MP_MAX_AGE: '24h'}
+    networks: [ingress]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 256m
+  backup:
+    build: {context: ., dockerfile: config/backup.Dockerfile}
+    profiles: [backup]
+    env_file: ${NBE_ENV_FILE:-.env}
+    environment:
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:-/repository}
+      RESTIC_PASSWORD_FILE: /run/secrets/backup_password
+      RESTIC_BACKEND_ENV_FILE: /run/secrets/restic_backend_env
+    secrets: [db_password, backup_password, restic_backend_env]
+    volumes: [uploads:/data/uploads:ro, jobs:/data/jobs:ro, './:/source:ro', '${BACKUP_REPOSITORY_PATH:-./.runtime/backups}:/repository', backup-status:/status]
+    tmpfs: [/scratch]
+    # data: reach MariaDB for the dump. egress: reach a remote Restic repository (S3, B2, REST…).
+    networks: [data, egress]
+    security_opt: [no-new-privileges:true]
+    pids_limit: ${BACKUP_PIDS_LIMIT:-256}
+    mem_limit: ${BACKUP_MEMORY_LIMIT:-1g}
+    cpus: ${BACKUP_CPU_LIMIT:-1.0}
+networks:
+  ingress:
+  data:
+    internal: true
+  egress:
+volumes:
+  database:
+  uploads:
+  jobs:
+  logs:
+  caddy:
+  backup-status:
+  rate:
+    driver_opts: {type: tmpfs, device: tmpfs, o: 'size=16m,mode=1777'}
+secrets:
+  db_password: {file: '${NBE_COMPOSE_DB_PASSWORD_FILE:-./secrets/db_password}'}
+  db_root_password: {file: '${NBE_COMPOSE_DB_ROOT_PASSWORD_FILE:-./secrets/db_root_password}'}
+  wp_salt: {file: '${NBE_COMPOSE_WP_SALT_FILE:-./secrets/wp_salt}'}
+  smtp_password: {file: '${NBE_COMPOSE_SMTP_PASSWORD_FILE:-./secrets/smtp_password}'}
+  admin_password: {file: '${NBE_COMPOSE_ADMIN_PASSWORD_FILE:-./secrets/admin_password}'}
+  demo_password: {file: '${NBE_COMPOSE_DEMO_PASSWORD_FILE:-./secrets/demo_password}'}
+  backup_password: {file: '${NBE_COMPOSE_BACKUP_PASSWORD_FILE:-./secrets/backup_password}'}
+  restic_backend_env: {file: '${RESTIC_BACKEND_ENV_FILE:-./secrets/restic_backend.env}'}

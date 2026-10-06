@@ -1,0 +1,34 @@
+# Optional live-editing overlay for contributors:
+#   docker compose -f compose.yaml -f compose.dev.yaml up -d     (or: make dev)
+# Mounts the platform code read-only into the running containers so PHP changes
+# apply without rebuilding the image. Never use this in production.
+x-live: &live
+  entrypoint: ['sh', '/opt/nbe/scripts/entrypoint.sh']
+  volumes:
+    - uploads:/var/www/html/wp-content/uploads
+    - jobs:/var/lib/nbe/jobs
+    - logs:/var/lib/nbe/logs
+    - rate:/run/nbe-rate
+    - backup-status:/var/lib/nbe/backup-status:ro
+    - ./app/mu-plugins:/var/www/html/wp-content/mu-plugins:ro
+    - ./app/nbe-media.php:/var/www/html/nbe-media.php:ro
+    - ./config/wp-config.php:/var/www/html/wp-config.php:ro
+    - ./scripts:/opt/nbe/scripts:ro
+    - ./tests:/opt/nbe/tests:ro
+    - ./dependencies.lock.json:/opt/nbe/dependencies.lock.json:ro
+services:
+  app:
+    <<: *live
+    command: ['apache2-foreground']  # overriding the entrypoint clears the image CMD
+  worker: *live
+  cli: *live
+  importer:
+    <<: *live
+    volumes:
+      - uploads:/var/www/html/wp-content/uploads
+      - jobs:/var/lib/nbe/jobs
+      - logs:/var/lib/nbe/logs
+      - rate:/run/nbe-rate
+      - ./app/mu-plugins:/var/www/html/wp-content/mu-plugins:ro
+      - ./scripts:/opt/nbe/scripts:ro
+      - ${IMPORT_DIRECTORY:-./.runtime/imports}:/imports:ro

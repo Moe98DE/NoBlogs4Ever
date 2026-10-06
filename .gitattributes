@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.zip binary
+.runtime/ export-ignore
+secrets/ export-ignore
+node_modules/ export-ignore
+test-results/ export-ignore
+playwright-report/ export-ignore
+.DS_Store export-ignore

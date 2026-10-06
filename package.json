@@ -1,0 +1,12 @@
+{
+  "name": "noblogs4ever-verification",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:contact": "node tests/contact-crypto.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

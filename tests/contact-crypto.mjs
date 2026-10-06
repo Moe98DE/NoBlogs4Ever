@@ -1,0 +1,14 @@
+import {webcrypto as crypto} from 'node:crypto';
+import assert from 'node:assert/strict';
+const keys=await crypto.subtle.generateKey({name:'RSA-OAEP',modulusLength:3072,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['encrypt','decrypt']);
+const key=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);
+const iv=crypto.getRandomValues(new Uint8Array(12));
+const text=new TextEncoder().encode('Private message — أهلاً');
+const ciphertext=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,text);
+const wrapped=await crypto.subtle.encrypt('RSA-OAEP',keys.publicKey,await crypto.subtle.exportKey('raw',key));
+const unwrapped=await crypto.subtle.importKey('raw',await crypto.subtle.decrypt('RSA-OAEP',keys.privateKey,wrapped),'AES-GCM',false,['decrypt']);
+assert.deepEqual(new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv},unwrapped,ciphertext)),text);
+const tampered=new Uint8Array(ciphertext);tampered[0]^=1;await assert.rejects(crypto.subtle.decrypt({name:'AES-GCM',iv},unwrapped,tampered));
+const other=await crypto.subtle.generateKey({name:'RSA-OAEP',modulusLength:3072,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['encrypt','decrypt']);
+await assert.rejects(crypto.subtle.decrypt('RSA-OAEP',other.privateKey,wrapped));
+console.log('PASS encrypted-contact round trip, tamper rejection, wrong-key rejection');

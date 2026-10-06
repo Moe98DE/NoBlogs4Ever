@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<title>NoBlogs4Ever contact keys (offline)</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { max-width: 52rem; margin: 2rem auto; padding: 0 1rem; font: 1rem/1.6 system-ui, sans-serif; }
+  textarea { width: 100%; min-height: 9rem; font: .9rem/1.4 ui-monospace, monospace; box-sizing: border-box; }
+  button { font: inherit; margin: .5rem 0 1rem; padding: .5rem 1rem; cursor: pointer; }
+  output { display: block; white-space: pre-wrap; overflow-wrap: anywhere; padding: 1rem; border: 1px solid; border-radius: .25rem; min-height: 3rem; }
+  *:focus-visible { outline: 3px solid #174ac2; outline-offset: 2px; }
+  .warn { border-left: 4px solid #b26200; padding-left: .75rem; }
+</style>
+</head>
+<body>
+<main>
+<h1>Encrypted contact: offline key tool</h1>
+<p class="warn">Save this file and open it from your own computer, ideally offline. It makes no network requests (enforced by its Content-Security-Policy). Never paste your private key into the publishing platform.</p>
+
+<h2>1. Create a key pair</h2>
+<button id="generate" type="button">Generate an RSA-3072 key pair</button>
+<p><label for="public">Public key — paste this into <em>Settings → Encrypted contact</em></label><textarea id="public" spellcheck="false"></textarea></p>
+<p><label for="fingerprint">Fingerprint (SHA-256) — publish it through a channel you trust</label><textarea id="fingerprint" spellcheck="false" style="min-height:3rem"></textarea></p>
+<p><label for="private">Private key — keep it secret and backed up</label><textarea id="private" spellcheck="false"></textarea></p>
+
+<h2>2. Read a message</h2>
+<p><label for="envelope">Paste the whole email (or just the envelope JSON)</label><textarea id="envelope" spellcheck="false"></textarea></p>
+<button id="decrypt" type="button">Decrypt</button>
+<output id="result" role="status" aria-live="polite"></output>
+</main>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const bytes = (text) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
+const pem = (label, buf) => `-----BEGIN ${label}-----\n${b64(buf).match(/.{1,64}/g).join('\n')}\n-----END ${label}-----`;
+const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+const say = (text) => { $('result').textContent = text; };
+
+$('generate').addEventListener('click', async () => {
+  try {
+    const pair = await crypto.subtle.generateKey({ name: 'RSA-OAEP', modulusLength: 3072, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' }, true, ['encrypt', 'decrypt']);
+    const spki = await crypto.subtle.exportKey('spki', pair.publicKey);
+    $('public').value = pem('PUBLIC KEY', spki);
+    $('private').value = pem('PRIVATE KEY', await crypto.subtle.exportKey('pkcs8', pair.privateKey));
+    $('fingerprint').value = hex(await crypto.subtle.digest('SHA-256', spki)).match(/.{4}/g).join(' ');
+    say('Save both keys now. Only the public key belongs on the website.');
+  } catch (error) { say(`Key generation failed: ${error.message}`); }
+});
+
+$('decrypt').addEventListener('click', async () => {
+  try {
+    const raw = $('envelope').value;
+    const marked = raw.match(/-----BEGIN NBE ENVELOPE-----\s*([\s\S]*?)\s*-----END NBE ENVELOPE-----/);
+    const envelope = JSON.parse(marked ? marked[1] : raw.trim());
+    if (envelope.version !== 1) throw new Error('unknown envelope version');
+    const key = await crypto.subtle.importKey('pkcs8', bytes($('private').value.replace(/-----[^-]+-----|\s/g, '')), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+    const aesRaw = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, key, bytes(envelope.key));
+    const aes = await crypto.subtle.importKey('raw', aesRaw, 'AES-GCM', false, ['decrypt']);
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes(envelope.iv) }, aes, bytes(envelope.ciphertext));
+    say(new TextDecoder().decode(plain));
+  } catch (error) { say(`Decryption failed: ${error.message}. Check that you used the private key matching the fingerprint shown on the form.`); }
+});
+</script>
+</body>
+</html>

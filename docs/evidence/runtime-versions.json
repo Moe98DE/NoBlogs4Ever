@@ -1,0 +1,25 @@
+{
+    "captured_at": "2026-10-06T21:33:47+00:00",
+    "wordpress": "7.1",
+    "php": "8.4.25",
+    "database": "11.8.9-MariaDB-ubu2404",
+    "plugins": {
+        "activitypub/activitypub.php": "9.3.1",
+        "classic-editor/classic-editor.php": "1.7.0",
+        "polylang/polylang.php": "3.8.9",
+        "two-factor/two-factor.php": "0.16.0",
+        "two-factor-provider-webauthn/index.php": "2.6.1"
+    },
+    "themes": {
+        "twentytwentyfive": "1.5",
+        "twentytwentyone": "2.9"
+    },
+    "multisite": true,
+    "subdomains": true,
+    "source": "production-compose-images",
+    "application_image_id": "9812ed026663fe2aa9ac89d971be7d730c12a64756d24f9ff403da6fbf78c20c",
+    "database_image_id": "2439dcd7d14010ecd1ff7a4e1c5abe8e208c34fe35290744deeeaac3569043c3",
+    "dockerfile_base": "php:8.4-apache-bookworm@sha256:25d70665acee86d7231af7bc5464794abd14585f80210f85f22dfb0713ac8ec7",
+    "compose_database": "mariadb:11.8@sha256:2439dcd7d14010ecd1ff7a4e1c5abe8e208c34fe35290744deeeaac3569043c3",
+    "capture_status": "full-runtime"
+}

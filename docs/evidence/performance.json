@@ -1,0 +1,48 @@
+{
+  "captured_at": "2026-10-06T21:58:11Z",
+  "environment": {
+    "host": "Linux cloud sandbox VM (shared vCPUs), development Compose stack, client on the same host",
+    "python": "3.13.16",
+    "cpu_count": 2,
+    "compose_project": "noblogs4ever (development overlay, default resource limits)",
+    "note": "Record host CPU/RAM, container limits, image IDs, database size, and network placement with this artifact."
+  },
+  "scenarios": {
+    "concurrent_public_reads": {
+      "requests": 60,
+      "concurrency": 8,
+      "elapsed_seconds": 3.719,
+      "observed_requests_per_second": 16.13,
+      "p50_ms": 491.36,
+      "p95_ms": 654.9,
+      "max_ms": 693.18
+    },
+    "authenticated_admin_reads": {
+      "requests": 20,
+      "concurrency": 2,
+      "elapsed_seconds": 1.417,
+      "observed_requests_per_second": 14.12,
+      "p50_ms": 140.57,
+      "p95_ms": 205.25,
+      "max_ms": 211.85
+    },
+    "media_reads": {
+      "requests": 40,
+      "concurrency": 8,
+      "elapsed_seconds": 0.661,
+      "observed_requests_per_second": 60.54,
+      "p50_ms": 122.77,
+      "p95_ms": 179.79,
+      "max_ms": 212.62
+    },
+    "large_archive_parser": {
+      "items": 2000,
+      "input_bytes": 1358867,
+      "elapsed_seconds": 0.053,
+      "incremental_peak_bytes": 4194304,
+      "php_memory_limit": "-1",
+      "parser": "bounded SimpleXML; operator XML ceiling remains 128 MiB"
+    }
+  },
+  "scope": "observational sample from a development stack; not a throughput, capacity or SLA claim"
+}

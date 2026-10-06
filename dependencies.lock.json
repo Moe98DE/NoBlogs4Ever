@@ -1,0 +1,79 @@
+[
+  {
+    "kind": "core",
+    "slug": "wordpress",
+    "version": "7.1",
+    "url": "https://wordpress.org/wordpress-7.1.zip",
+    "sha256": "d1ae02b5ae18428031ffc3943659fa87ab361d827f4aa804adf9276e4dc75df6"
+  },
+  {
+    "kind": "plugin",
+    "slug": "two-factor",
+    "version": "0.16.0",
+    "url": "https://downloads.wordpress.org/plugin/two-factor.0.16.0.zip",
+    "sha256": "449f004f43bcd87a5bdfa3d358758a4f301aa9fb7e8a46bf2f826d2e7463d0df"
+  },
+  {
+    "kind": "plugin",
+    "slug": "two-factor-provider-webauthn",
+    "version": "2.6.1",
+    "url": "https://downloads.wordpress.org/plugin/two-factor-provider-webauthn.2.6.1.zip",
+    "sha256": "20d08702e077f243b2c93f05fff12c7242411cce28e80e0c07a4ced1aca46abb"
+  },
+  {
+    "kind": "plugin",
+    "slug": "classic-editor",
+    "version": "1.7.0",
+    "url": "https://downloads.wordpress.org/plugin/classic-editor.1.7.0.zip",
+    "sha256": "7cc7799b0b7d820fbb7528dbff8027c736e52513992416cb37279f44d3d9dd77"
+  },
+  {
+    "kind": "plugin",
+    "slug": "polylang",
+    "version": "3.8.9",
+    "url": "https://downloads.wordpress.org/plugin/polylang.3.8.9.zip",
+    "sha256": "de5fae3d399e34c2db496a02b7cff4e4ca79723c418c8542b82bb7c030204a60"
+  },
+  {
+    "kind": "plugin",
+    "slug": "activitypub",
+    "version": "9.3.1",
+    "url": "https://downloads.wordpress.org/plugin/activitypub.9.3.1.zip",
+    "sha256": "41571179bf4cf0ccb583efe73d2d8a8647c46078897224bd246a43707641b90c"
+  },
+  {
+    "kind": "theme",
+    "slug": "twentytwentyfive",
+    "version": "1.5",
+    "url": "https://downloads.wordpress.org/theme/twentytwentyfive.1.5.zip",
+    "sha256": "f333ce53aaa4049639298247d03480a4bd9b56fa8f0fea0440da262d7d595ba4"
+  },
+  {
+    "kind": "theme",
+    "slug": "twentytwentyone",
+    "version": "2.9",
+    "url": "https://downloads.wordpress.org/theme/twentytwentyone.2.9.zip",
+    "sha256": "51d4ac1dcaef18b0e35a1a313bce8115d3aa4ff315bb1143f95c223c38817d8b"
+  },
+  {
+    "kind": "language",
+    "slug": "de_DE",
+    "version": "7.1",
+    "url": "https://downloads.wordpress.org/translation/core/7.1/de_DE.zip",
+    "sha256": "7e8ee40f9cc0ed9e5c5d5bcf7325c1056580dcc5b5da3667c1bb98e82723e200"
+  },
+  {
+    "kind": "language",
+    "slug": "fr_FR",
+    "version": "7.1",
+    "url": "https://downloads.wordpress.org/translation/core/7.1/fr_FR.zip",
+    "sha256": "6550855cb7fd52cfe364918e8c3c78c1d57966e109250bb1cb077a1dae3a6984"
+  },
+  {
+    "kind": "language",
+    "slug": "es_ES",
+    "version": "7.1",
+    "url": "https://downloads.wordpress.org/translation/core/7.1/es_ES.zip",
+    "sha256": "a08e0c61df335f00f6d9b54e330db332e527ca9b3b5c8bc16270f7201452c59f"
+  }
+]
