@@ -13,11 +13,11 @@ This guide takes a fresh Linux host to a running platform. Work through the [pro
 
 ## 2. Get the release
 
-Use a tagged release. Each release publishes an image at `ghcr.io/moe98de/noblogs4ever:<tag>` and a `release-manifest.json` with its immutable digest.
+Use a tagged release from the [Releases page](https://github.com/Moe98DE/noblogs4ever/releases). Each release publishes an image at `ghcr.io/moe98de/noblogs4ever:<tag>` and attaches a `release-manifest.json` with its immutable digest. Replace `<tag>` below with the release you are deploying (for example `v1.0.0-rc.1`).
 
 ```sh
 sudo mkdir -p /srv/noblogs4ever && cd /srv/noblogs4ever
-git clone --branch v1.0.0 https://github.com/Moe98DE/noblogs4ever.git .
+git clone --branch <tag> https://github.com/Moe98DE/noblogs4ever.git .
 ```
 
 ## 3. Configure

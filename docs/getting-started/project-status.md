@@ -1,6 +1,6 @@
 # Project status and roadmap
 
-**Version:** 1.0.0 release candidate · **License:** GPL-2.0-or-later
+**Version:** [1.0.0-rc.1](https://github.com/Moe98DE/noblogs4ever/releases/tag/v1.0.0-rc.1) (release candidate) · **License:** GPL-2.0-or-later
 
 The scope is defined by the [product specification](../reference/specification.md). This page records, feature by feature, how mature each part is. *Tested* means an automated test in this repository exercises it on every CI run.
 

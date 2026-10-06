@@ -8,6 +8,7 @@ A self-hostable, privacy-first blogging platform in the spirit of NoBlogs — so
 
 [![CI](https://github.com/Moe98DE/noblogs4ever/actions/workflows/ci.yaml/badge.svg)](https://github.com/Moe98DE/noblogs4ever/actions/workflows/ci.yaml)
 [![License: GPL v2+](https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Moe98DE/noblogs4ever?include_prereleases&sort=semver)](https://github.com/Moe98DE/noblogs4ever/releases)
 ![Status: release candidate](https://img.shields.io/badge/status-1.0%20release%20candidate-orange)
 
 [Why this exists](#why-this-exists) · [Bring your blog back](docs/user-guide/coming-from-noblogs.md) · [Run your own](#quick-start) · [Documentation](docs/README.md) · [Contributing](CONTRIBUTING.md)
