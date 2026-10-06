@@ -102,7 +102,7 @@ services:
       - ${IMPORT_DIRECTORY:-./.runtime/imports}:/imports:ro
     secrets: [db_password, wp_salt, smtp_password]
   db:
-    image: mariadb:11.8@sha256:2439dcd7d14010ecd1ff7a4e1c5abe8e208c34fe35290744deeeaac3569043c3
+    image: mariadb:13.0@sha256:f1bba652ba57bea3099ca2fe1af692af537c27d96e0bcde39dce29e2ba1ec4f3
     environment:
       MARIADB_DATABASE: wordpress
       MARIADB_USER: wordpress
