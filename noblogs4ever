@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+"""NoBlogs4Ever operator entrypoint. Run with Python 3.10+ or ./noblogs4ever."""
+from scripts.operator_cli import main
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,14 @@
+.git
+.env
+secrets
+.runtime
+node_modules
+vendor
+test-results
+playwright-report
+.DS_Store
+__MACOSX
+dist
+release
+.github
+docs

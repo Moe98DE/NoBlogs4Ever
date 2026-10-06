@@ -1,0 +1,38 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security issue?** Do not file it here — use private vulnerability reporting (see SECURITY.md).
+        Never include secrets, personal data, real migration archives or production logs.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Release tag, commit or image digest
+    validations: {required: true}
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Publishing, Accounts / MFA / registration, Migration / import, Export, Media, Analytics / directory, Operations / deployment, Backups, Documentation, Other]
+    validations: {required: true}
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Use synthetic data. Include the commands you ran.
+    validations: {required: true}
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behaviour
+    validations: {required: true}
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitised output
+      description: Relevant output of `./noblogs4ever doctor --json`, test runs or migration report excerpts (remove personal data).
+      render: text

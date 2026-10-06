@@ -1,0 +1,9 @@
+[Unit]
+Description=Encrypted NoBlogs4Ever backup
+Requires=docker.service
+After=docker.service
+[Service]
+Type=oneshot
+WorkingDirectory=/srv/noblogs4ever
+ExecStart=/usr/bin/docker compose --profile backup run --rm backup /scripts/backup.sh
+UMask=0077

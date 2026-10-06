@@ -1,0 +1,9 @@
+# Vulnerability exceptions for the image scan. Every entry needs a reason, an
+# owner decision recorded in the PR that added it, and an expiry date.
+#
+# two-factor-provider-webauthn 2.6.1 (latest on wordpress.org) bundles these
+# Composer packages; no fixed plugin release exists yet. Guzzle's HTTP client
+# and Symfony Cache are not reachable from tenants (WebAuthn verification runs
+# locally). Remove when the plugin ships updated dependencies.
+CVE-2026-69246 exp:2026-12-31
+CVE-2026-45073 exp:2026-12-31

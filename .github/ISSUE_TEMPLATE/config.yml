@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/Moe98DE/noblogs4ever/security/advisories/new
+    about: Please report vulnerabilities privately.
+  - name: Documentation
+    url: https://github.com/Moe98DE/noblogs4ever/tree/main/docs
+    about: Guides for writers, operators and contributors.

@@ -1,0 +1,20 @@
+# Static analysis for the platform plugin: composer install && vendor/bin/phpstan
+parameters:
+  level: 5
+  paths:
+    - app
+  bootstrapFiles:
+    - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+    - vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
+    - tests/phpstan-bootstrap.php
+  reportUnmatchedIgnoredErrors: false
+  ignoreErrors:
+    # WordPress admin includes exist only inside the WordPress tree.
+    - identifier: requireOnce.fileNotFound
+    # The Two Factor plugin is optional at analysis time (guarded by class_exists()).
+    - '#Two_Factor_#'
+    # WP_INSTALLING is defined only while WordPress installs.
+    - message: '#Right side of && is always (true|false)#'
+      path: app/mu-plugins/nbe/Security.php
+    - message: '#media_handle_sideload expects array<string>#'
+      path: app/mu-plugins/nbe/Migration.php

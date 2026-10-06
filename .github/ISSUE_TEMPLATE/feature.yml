@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an improvement or a new capability.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve, and for whom?
+      description: Writers, site owners, operators or readers?
+    validations: {required: true}
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+  - type: textarea
+    id: impact
+    attributes:
+      label: Security, privacy and migration impact
+      description: Does it store new data, add network requests, change tenant boundaries or affect import/export?
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: I checked the specification and project status page, and this fits the project's goals.
