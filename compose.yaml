@@ -121,7 +121,7 @@ services:
     cpus: ${DB_CPU_LIMIT:-2.0}
     restart: unless-stopped
   mail:
-    image: axllent/mailpit:v1.27@sha256:e22dce5b36f93c77082e204a3942fb6b283b7896e057458400a4c88344c3df68
+    image: axllent/mailpit:v1.31@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48
     ports: ['127.0.0.1:8025:8025']
     environment: {MP_MAX_MESSAGES: '100', MP_MAX_AGE: '24h'}
     networks: [ingress]
