@@ -103,6 +103,12 @@ Getting old sites back online is what this project is for, so the importer gets 
 
 Writers: start with [Coming from NoBlogs](docs/user-guide/coming-from-noblogs.md). Details: [import guide](docs/user-guide/importing.md), [migration engine](docs/architecture/migration-engine.md).
 
+## Made in the EU
+
+NoBlogs4Ever is developed in Germany, and its defaults follow the GDPR's principles of data minimisation and storage limitation: no request logs, no stored IP addresses, aggregate-only analytics, short configurable retention.
+
+The software doesn't depend on any vendor cloud, telemetry or licence server, so where data lives is the operator's choice. Run it on an EU host with EU email and backup providers, and readers' and writers' data stays in the EU. Each operator is still responsible for their own instance's GDPR obligations; using this software doesn't make an installation compliant on its own. More in [Why NoBlogs4Ever](docs/getting-started/why.md#made-in-the-eu).
+
 ## Project status
 
 **1.0 release candidate.** The platform is feature-complete against its [specification](docs/reference/specification.md) for the core scope and the full test pyramid passes: unit and security tests, 170+ live integration assertions against WordPress and MariaDB, 17 browser workflows (desktop and mobile), an isolated backup-restore drill, and a production-overlay smoke test with TLS and container hardening.
