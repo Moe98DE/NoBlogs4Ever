@@ -27,6 +27,19 @@ Many small hosts are harder to silence and less likely to all vanish at once tha
 * **Hosts that small crews can sustain** — one Docker host, tested backups and restores, an emergency read-only switch, clear runbooks.
 * **WordPress compatibility** — the editor and export format people already know, so nothing is locked in.
 
+## Made in the EU
+
+NoBlogs4Ever is developed in Germany, with the GDPR in mind from the start. What that does and doesn't mean:
+
+* **Data minimisation by default.** No request logs, no stored IP addresses of readers or commenters, aggregate-only analytics, and short, configurable retention for logs, imports and backups. The [privacy page](../architecture/privacy.md) lists exactly what is stored and for how long.
+* **No outside services built in.** There is no telemetry, licence server or vendor cloud, and pages make no third-party requests by default. An instance only talks to the services its operators configure: an SMTP provider and backup storage.
+* **Data stays where you put it.** Choose an EU server, EU email provider and EU backup storage, and the instance's data stays in the EU.
+* **Self-service export.** Writers can export all their content themselves, at any time, without asking an operator.
+
+It is not a compliance certificate. Each installation's operators are the data controllers for it and remain responsible for its GDPR obligations: a privacy notice, data-processing agreements with their hosting, email and backup providers, answering requests from the people whose data they hold, and reporting breaches (see [Incident response](../operator-guide/incident-response.md)).
+
+The project's own infrastructure is not all in the EU either: the source code, CI and release images are hosted on GitHub, a US service, and WordPress and the other components come from their upstream projects.
+
 ## What we are not
 
 NoBlogs4Ever is an independent community project. It is not affiliated with, operated by, or endorsed by the former NoBlogs operators, and it does not host anything itself. Each installation is run by its own operators, under their own responsibility and local law.
