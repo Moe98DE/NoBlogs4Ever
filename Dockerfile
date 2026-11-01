@@ -1,7 +1,7 @@
 # NoBlogs4Ever application image: Apache + PHP + WordPress Multisite + curated,
 # checksum-locked plugins/themes/languages + the NoBlogs4Ever must-use plugin.
 # Tenants can never add code to this image; operators release new images.
-FROM php:8.4-apache-bookworm@sha256:9e811795a606ca7f8586dee48d32acf444985c19ac252d70d181cd71a4603898
+FROM php:8.5-apache-bookworm@sha256:6b401f1bfa88fc9d2ae5c3ff2558f18d0c17c9801718ded725095ea29131f34b
 
 LABEL org.opencontainers.image.title="NoBlogs4Ever" \
       org.opencontainers.image.description="Spiritual successor to NoBlogs: self-hostable, privacy-first blogging on WordPress Multisite" \
